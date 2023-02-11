@@ -1,8 +1,10 @@
 package org.mitrofan.bookstore;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.dao.DuplicateKeyException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -13,6 +15,11 @@ import java.util.Date;
 class BookRepositoryTests {
     @Autowired
     BookRepository repository;
+
+    @BeforeEach
+    void beforeEach() {
+        repository.deleteAll().block();
+    }
 
     @Test
     void testAddBook() {
@@ -26,13 +33,16 @@ class BookRepositoryTests {
         Mono<Book> bookMono = repository.save(book.toBuilder().build());
 
         StepVerifier.create(bookMono)
-                .expectNext(book)
+                .expectNextMatches(b -> book.getIsbn().equals(b.getIsbn()) &&
+                        book.getTitle().equals(b.getTitle()) &&
+                        book.getAuthorFirstLastName().equals(b.getAuthorFirstLastName()) &&
+                        book.getAddedOn().equals(b.getAddedOn()))
                 .expectComplete()
                 .verify();
     }
 
     @Test
-    void testSaveAllBooksWithSameIsbn() {
+    void testSaveDoesntAllowBooksWithSameIsbn() {
         Book book1 = Book.builder()
                 .isbn("isbn")
                 .addedOn(new Date())
@@ -50,8 +60,8 @@ class BookRepositoryTests {
         var saved = repository.saveAll(Flux.just(book1.toBuilder().build(), book2.toBuilder().build()));
 
         StepVerifier.create(saved)
-                .expectNextCount(2)
-                .expectComplete()
+                .expectNextCount(1)
+                .expectError(DuplicateKeyException.class)
                 .verify();
     }
 }
