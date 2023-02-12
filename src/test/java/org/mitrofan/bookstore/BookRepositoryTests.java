@@ -90,4 +90,21 @@ class BookRepositoryTests {
                 .expectComplete()
                 .verify();
     }
+
+    @Test
+    void testFindByAuthorAndTitle() {
+        Book book = Book.builder()
+                .author("author")
+                .title("title")
+                .build();
+
+        repository.saveAll(Flux.just(book.toBuilder().build(), book.toBuilder().title("anotherTitle").build())).blockLast();
+
+        Flux<Book> found = repository.findByAuthorAndTitle("author", "title");
+
+        StepVerifier.create(found)
+                .expectNextMatches(b -> "author".equals(b.getAuthor()) && "title".equals(b.getTitle()))
+                .expectComplete()
+                .verify();
+    }
 }
