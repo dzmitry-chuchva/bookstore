@@ -1,6 +1,7 @@
 package org.mitrofan.bookstore;
 
 import org.springframework.data.domain.Range;
+import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -15,4 +16,6 @@ interface BookRepository extends ReactiveMongoRepository<Book, String> {
     Flux<Book> findByAuthorAndTitle(String author, String title);
 
     Flux<Book> findByAddedOnBetween(Range<Instant> dateRange);
+
+    Flux<Book> findAllBy(TextCriteria criteria);
 }

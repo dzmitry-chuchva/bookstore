@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Range;
+import org.springframework.data.mongodb.core.query.TextCriteria;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -131,4 +132,26 @@ class BookRepositoryTests {
                 .verify();
     }
 
+    @Test
+    void findByTextCriteria() {
+        repository.saveAll(Flux.just(
+                        Book.builder()
+                                .isbn("1111 1111")
+                                .title("aaaa bbbb")
+                                .author("ccc ddddd")
+                                .build(),
+                        Book.builder()
+                                .isbn("2222 2222")
+                                .title("zzzz yyyy")
+                                .author("xxx hello")
+                                .build()))
+                .blockLast();
+
+        Flux<Book> found = repository.findAllBy(TextCriteria.forDefaultLanguage().matching("hello"));
+
+        StepVerifier.create(found)
+                .expectNextMatches(b -> "2222 2222".equals(b.getIsbn()))
+                .expectComplete()
+                .verify();
+    }
 }
