@@ -17,7 +17,7 @@ import java.time.Instant;
 import static org.springframework.data.domain.Range.Bound.inclusive;
 
 @DataMongoTest
-@Import(StorageConfiguration.class)
+@Import({GlobalTestConfiguration.class, StorageConfiguration.class})
 class BookRepositoryTests {
     @Autowired
     BookRepository repository;
