@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.dao.DuplicateKeyException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -12,6 +13,7 @@ import reactor.test.StepVerifier;
 import java.util.Date;
 
 @DataMongoTest
+@Import(StorageConfiguration.class)
 class BookRepositoryTests {
     @Autowired
     BookRepository repository;
@@ -25,7 +27,6 @@ class BookRepositoryTests {
     void testAddBook() {
         Book book = Book.builder()
                 .isbn("isbn")
-                .addedOn(new Date())
                 .title("title")
                 .authorFirstLastName("First Last")
                 .build();
@@ -35,8 +36,17 @@ class BookRepositoryTests {
         StepVerifier.create(bookMono)
                 .expectNextMatches(b -> book.getIsbn().equals(b.getIsbn()) &&
                         book.getTitle().equals(b.getTitle()) &&
-                        book.getAuthorFirstLastName().equals(b.getAuthorFirstLastName()) &&
-                        book.getAddedOn().equals(b.getAddedOn()))
+                        book.getAuthorFirstLastName().equals(b.getAuthorFirstLastName()))
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    void testAuditing() {
+        Mono<Book> bookMono = repository.save(Book.builder().build());
+
+        StepVerifier.create(bookMono)
+                .expectNextMatches(b -> b.getAddedOn() != null)
                 .expectComplete()
                 .verify();
     }
