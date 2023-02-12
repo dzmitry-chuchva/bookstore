@@ -28,7 +28,7 @@ class BookRepositoryTests {
         Book book = Book.builder()
                 .isbn("isbn")
                 .title("title")
-                .authorFirstLastName("First Last")
+                .author("First Last")
                 .build();
 
         Mono<Book> bookMono = repository.save(book.toBuilder().build());
@@ -36,7 +36,7 @@ class BookRepositoryTests {
         StepVerifier.create(bookMono)
                 .expectNextMatches(b -> book.getIsbn().equals(b.getIsbn()) &&
                         book.getTitle().equals(b.getTitle()) &&
-                        book.getAuthorFirstLastName().equals(b.getAuthorFirstLastName()))
+                        book.getAuthor().equals(b.getAuthor()))
                 .expectComplete()
                 .verify();
     }
@@ -57,14 +57,14 @@ class BookRepositoryTests {
                 .isbn("isbn")
                 .addedOn(new Date())
                 .title("title1")
-                .authorFirstLastName("First1 Last1")
+                .author("First1 Last1")
                 .build();
 
         Book book2 = Book.builder()
                 .isbn("isbn")
                 .addedOn(new Date())
                 .title("title2")
-                .authorFirstLastName("First2 Last2")
+                .author("First2 Last2")
                 .build();
 
         var saved = repository.saveAll(Flux.just(book1.toBuilder().build(), book2.toBuilder().build()));

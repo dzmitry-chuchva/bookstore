@@ -21,7 +21,7 @@ class Book {
     private String isbn;
     @Version
     private long version;
-    private String authorFirstLastName;
+    private String author;
     @CreatedDate
     private Date addedOn;
     private String title;
