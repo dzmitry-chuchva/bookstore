@@ -74,4 +74,20 @@ class BookRepositoryTests {
                 .expectError(DuplicateKeyException.class)
                 .verify();
     }
+
+    @Test
+    void testFindByISBN() {
+        Book book = Book.builder()
+                .isbn("isbn")
+                .build();
+
+        repository.saveAll(Flux.just(book.toBuilder().build(), book.toBuilder().isbn("anotherIsbn").build())).blockLast();
+
+        Mono<Book> found = repository.findByIsbn("isbn");
+
+        StepVerifier.create(found)
+                .expectNextMatches(b -> "isbn".equals(b.getIsbn()))
+                .expectComplete()
+                .verify();
+    }
 }
