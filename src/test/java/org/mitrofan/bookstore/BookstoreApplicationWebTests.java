@@ -28,6 +28,7 @@ class BookstoreApplicationWebTests {
                 .body(Mono.just(Book.builder().build()), Book.class)
                 .exchange()
                 .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBody(Book.class);
     }
 }
