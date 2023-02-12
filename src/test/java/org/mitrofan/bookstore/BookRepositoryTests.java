@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.Date;
+import java.time.Instant;
 
 @DataMongoTest
 @Import(StorageConfiguration.class)
@@ -55,14 +55,14 @@ class BookRepositoryTests {
     void testSaveDoesntAllowBooksWithSameIsbn() {
         Book book1 = Book.builder()
                 .isbn("isbn")
-                .addedOn(new Date())
+                .addedOn(Instant.now())
                 .title("title1")
                 .author("First1 Last1")
                 .build();
 
         Book book2 = Book.builder()
                 .isbn("isbn")
-                .addedOn(new Date())
+                .addedOn(Instant.now())
                 .title("title2")
                 .author("First2 Last2")
                 .build();
