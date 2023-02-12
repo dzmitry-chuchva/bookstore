@@ -12,6 +12,11 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @EnableWebFlux
 public class WebConfiguration implements WebFluxConfigurer {
     @Bean
+    public BookHandler bookHandler(BookRepository bookRepository) {
+        return new BookHandler(bookRepository);
+    }
+
+    @Bean
     public RouterFunction<?> bookRouter(BookHandler handler) {
         return route()
                 .POST("/", handler::addBook)
