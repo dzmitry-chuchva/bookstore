@@ -6,11 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Range;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.Instant;
+
+import static org.springframework.data.domain.Range.Bound.inclusive;
 
 @DataMongoTest
 @Import(StorageConfiguration.class)
@@ -107,4 +111,24 @@ class BookRepositoryTests {
                 .expectComplete()
                 .verify();
     }
+
+    @Test
+    void findByAddedOnBetween() {
+        repository.saveAll(Flux.just(Book.builder().isbn("1").addedOn(Instant.now()).build(),
+                        Book.builder().isbn("2").addedOn(Instant.now()).build()))
+                .blockLast();
+
+        Book first = repository.findByIsbn("1").block();
+        first.setAddedOn(Instant.now().minus(Duration.ofDays(2)));
+        repository.save(first).block();
+
+        Flux<Book> found = repository.findByAddedOnBetween(Range.from(inclusive(Instant.now().minus(Duration.ofDays(1))))
+                .to(inclusive(Instant.now().plus(Duration.ofDays(1)))));
+
+        StepVerifier.create(found)
+                .expectNextMatches(b -> "2".equals(b.getIsbn()))
+                .expectComplete()
+                .verify();
+    }
+
 }
